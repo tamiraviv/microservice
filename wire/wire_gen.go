@@ -10,29 +10,34 @@ import (
 	"microservice/internal/app"
 	"microservice/internal/app/domain"
 	"microservice/internal/app/drivers/rest"
+	"microservice/internal/pkg/jsonschema"
 	"microservice/internal/pkg/mongodb"
 	"microservice/internal/pkg/viper"
 )
 
 // Injectors from wire.go:
 
-func InitializeApplication(ctx context.Context) (app.App, error) {
+func InitializeApplication(ctx context.Context) (*app.App, error) {
 	service, err := viper.NewConfiguration()
 	if err != nil {
-		return app.App{}, err
+		return nil, err
 	}
 	mongoDB, err := mongodb.NewClient(ctx, service)
 	if err != nil {
-		return app.App{}, err
+		return nil, err
 	}
 	domainDomain, err := domain.NewDomain(mongoDB)
 	if err != nil {
-		return app.App{}, err
+		return nil, err
 	}
-	server, err := rest.NewServer(service, domainDomain)
+	jsonschemaService := jsonschema.NewJSONSchemaService()
+	adapter, err := rest.NewServer(service, domainDomain, jsonschemaService)
 	if err != nil {
-		return app.App{}, err
+		return nil, err
 	}
-	appApp := app.NewApp(server)
+	appApp, err := app.NewApp(service, adapter)
+	if err != nil {
+		return nil, err
+	}
 	return appApp, nil
 }

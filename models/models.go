@@ -1,7 +1,7 @@
 package models
 
+// Document is a representation of a single document
 type Document struct {
 	Name string
-	Age  int
-	Doc  interface{}
+	Doc  map[string]interface{}
 }

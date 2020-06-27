@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func (s *Server) newRouter(timeout time.Duration) *chi.Mux {
+func (s *Adapter) newRouter(timeout time.Duration) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Timeout(timeout))
 	r.Route("/documents", func(r chi.Router) {

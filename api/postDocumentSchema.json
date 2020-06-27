@@ -1,0 +1,22 @@
+{
+  "description": "the post document api request body",
+  "type": "object",
+  "required": [
+    "name",
+    "doc"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the name of the document"
+    },
+    "doc": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "the document"
+    }
+  },
+  "additionalProperties": false,
+  "minProperties": 1
+}

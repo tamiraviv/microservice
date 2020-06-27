@@ -5,13 +5,16 @@ import (
 
 	"microservice/internal/pkg/errors"
 
+	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 )
 
+// Service implements the configuration service
 type Service struct {
 	v *viper.Viper
 }
 
+// NewConfiguration returns a new instance of the Service struct
 func NewConfiguration() (*Service, error) {
 	v := viper.New()
 	v.SetConfigFile("./conf/bootstrapConfiguration.yaml")
@@ -25,44 +28,81 @@ func NewConfiguration() (*Service, error) {
 	}, nil
 }
 
+// IsSet checks if the requested key exists
+func (v *Service) IsSet(key string) bool {
+	return v.v.IsSet(key)
+}
+
+// Set places the key and value in configuration service
+func (v *Service) Set(key string, value interface{}) {
+	v.v.Set(key, value)
+}
+
+// Get returns the value for the requested key as interface{}
+func (v *Service) Get(key string) interface{} {
+	return v.v.Get(key)
+}
+
+// GetString returns the value for the requested key as string
 func (v *Service) GetString(key string) (string, error) {
-	value := v.v.Get(key)
-	if value == nil {
-		return "", errors.Errorf("Could not find key (%s) in configuration", key)
+	if !v.v.IsSet(key) {
+		return "", keyNotFoundError(key)
 	}
 
-	switch s := value.(type) {
-	case string:
-		return s, nil
-	default:
-		return "", errors.Errorf("value %#v of type %T is not string", value, value)
+	value, err := cast.ToStringE(v.v.Get(key))
+	if err != nil {
+		return "", invalidDataTypeError(key)
 	}
+
+	return value, nil
 }
 
+// GetInt returns the value for the requested key as int
 func (v *Service) GetInt(key string) (int, error) {
-	value := v.v.Get(key)
-	if value == nil {
-		return 0, errors.Errorf("Could not find key (%s) in configuration", key)
+	if !v.v.IsSet(key) {
+		return 0, keyNotFoundError(key)
 	}
 
-	switch i := value.(type) {
-	case int:
-		return i, nil
-	default:
-		return 0, errors.Errorf("value %#v of type %T is not int", i, i)
+	value, err := cast.ToIntE(v.v.Get(key))
+	if err != nil {
+		return 0, invalidDataTypeError(key)
 	}
+
+	return value, nil
 }
 
+// GetDuration returns the value for the requested key as duration
 func (v *Service) GetDuration(key string) (time.Duration, error) {
-	value := v.v.Get(key)
-	if value == nil {
-		return 0, errors.Errorf("Could not find key (%s) in configuration", key)
+	if !v.v.IsSet(key) {
+		return 0, keyNotFoundError(key)
 	}
 
-	switch d := value.(type) {
-	case string:
-		return time.ParseDuration(d)
-	default:
-		return 0, errors.Errorf("value %#v of type %T is not a string", d, d)
+	value, err := time.ParseDuration(v.v.GetString(key))
+	if err != nil {
+		return 0, invalidDataTypeError(key)
 	}
+
+	return value, nil
+}
+
+// GetBool returns the value for the requested key as bool
+func (v *Service) GetBool(key string) (bool, error) {
+	if !v.v.IsSet(key) {
+		return false, keyNotFoundError(key)
+	}
+
+	value, err := cast.ToBoolE(v.v.Get(key))
+	if err != nil {
+		return false, invalidDataTypeError(key)
+	}
+
+	return value, nil
+}
+
+func keyNotFoundError(key string) error {
+	return errors.Errorf("Failed to get key (%s) from configuration", key).SetType(errors.ErrorTypeNotFound)
+}
+
+func invalidDataTypeError(key string) error {
+	return errors.Errorf("Invalid data type for key (%s) from configuration", key).SetType(errors.ErrorTypeInternal)
 }

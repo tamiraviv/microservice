@@ -1,0 +1,17 @@
+#Configuration Mock
+mockgen -destination mocks/mock_configurationService.go -package mocks -mock_names Configuration=MockConfigurationService microservice/internal/app Configuration
+
+#Rest Server Mock
+mockgen -destination mocks/mock_restServer.go -package mocks -mock_names RestServer=MockRestServer microservice/internal/app RestServer
+
+#Domain Service Mock
+mockgen -destination mocks/mock_domainService.go -package mocks -mock_names DomainSvc=MockDomainService microservice/internal/app/drivers/rest DomainSvc
+
+#HTTP Server Mock
+mockgen -destination mocks/mock_httpServer.go -package mocks -mock_names Server=MockHTTPServer microservice/internal/app/drivers/rest Server
+
+#Domain Service Mock
+mockgen -destination mocks/mock_JSONSchemaValidator.go -package mocks -mock_names JSONSchemaValidator=MockJSONSchemaValidator microservice/internal/app/drivers/rest JSONSchemaValidator
+
+#DocumentDB Mock
+mockgen -destination mocks/mock_DocumentDB.go -package mocks -mock_names DocumentDB=MockDocumentDB microservice/internal/app/domain DocumentDB
